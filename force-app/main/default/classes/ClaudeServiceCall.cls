@@ -4,7 +4,7 @@ public with sharing class ClaudeServiceCall {
 
     @AuraEnabled(cacheable=false)
     public static string explainCode(String codeSnippet){
-        try {
+        
             
             Http http = new Http();
             HttpRequest req = new HttpRequest();
@@ -38,7 +38,7 @@ public with sharing class ClaudeServiceCall {
                 }
             };
 
-            req.setBody(JSON.deSerialize(payload));
+            req.setBody(JSON.serialize(payload));
 
             
             HttpResponse resp = http.send(req);
@@ -48,8 +48,10 @@ public with sharing class ClaudeServiceCall {
                 return resp.getBody();
             }
 
-        } catch (Exception e) {
-            throw new CalloutException('Callout failed with the following message' + e.getMessage());
-        }
+            else{
+                throw new CalloutException('Callout failed with the following message' + resp.getStatusCode() + ' ' + resp.getBody());
+            }
+
+        
     }
 }
