@@ -1,4 +1,4 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement } from 'lwc';
 import explainCode from '@salesforce/apex/ClaudeServiceCall.explainCode';
 
 export default class CodeAnalyserComponent extends LightningElement {
