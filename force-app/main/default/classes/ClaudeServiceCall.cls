@@ -1,5 +1,6 @@
 public with sharing class ClaudeServiceCall {
 
+    String apiKey = Auth.AuthToken.getAccessToken('Claude External Credential');
     private static final String namedCred = 'callout:ClaudeAI';
 
     @AuraEnabled(cacheable=false)
