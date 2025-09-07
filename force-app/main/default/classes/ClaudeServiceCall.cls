@@ -12,8 +12,9 @@ public with sharing class ClaudeServiceCall {
             req.setMethod('POST');
             req.setHeader('Accept', 'application/json');
             req.setHeader('Content-Type', 'application/json');
+            req.setTimeout(120000);
 
-            String prompt = 'Explain the provided apex code line by line in the Json format. The return response format should be with ' + 
+            String prompt = 'You\'re an expert Software Engineer. Explain the provided code line by line in a JSON format. The return response format should be with ' + 
                         'fields: explanation (string), ' +
                         'line_by_line (array of {line, explanation}). ' +
                         'Explain this Apex code line-by-line:\n\n' + codeSnippet;
@@ -29,7 +30,7 @@ public with sharing class ClaudeServiceCall {
             Map<String,Object> payload = new Map<String,Object>{
 
                 'model' => 'claude-sonnet-4-20250514',
-                'max_tokens' => 1000,
+                'max_tokens' => 2000,
                 'messages' => new List<Object>{
                     new Map<String,Object>{
                         'role' => 'user',

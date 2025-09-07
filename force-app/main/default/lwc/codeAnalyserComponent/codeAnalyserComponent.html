@@ -1,3 +1,14 @@
 <template>
-    
+    <lightning-card title="Code Analyzer">
+
+        <lightning-textarea label="Paste your code" placeholder="You can paste any code for Claude to analyze" onchange={handleInputChange}></lightning-textarea>
+
+        <div class="slds-m-top_small">
+            <lightning-button label="Explain" onclick={explainCodeSnippet}></lightning-button>
+        </div>
+        
+        <div class="slds-m-top_medium">
+            <pre>{explanation}</pre>
+        </div>
+    </lightning-card>
 </template>
