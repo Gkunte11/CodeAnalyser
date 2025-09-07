@@ -1,12 +1,10 @@
 public with sharing class ClaudeServiceCall {
 
-    String apiKey = Auth.AuthToken.getAccessToken('Claude External Credential');
     private static final String namedCred = 'callout:ClaudeAI';
 
     @AuraEnabled(cacheable=false)
     public static string explainCode(String codeSnippet){
         
-            
             Http http = new Http();
             HttpRequest req = new HttpRequest();
             req.setEndPoint(namedCred + '/v1/messages');
@@ -14,6 +12,9 @@ public with sharing class ClaudeServiceCall {
             req.setHeader('Accept', 'application/json');
             req.setHeader('Content-Type', 'application/json');
             req.setHeader('anthropic-version', '2023-06-01');
+
+            String apiKey = Auth.AuthToken.getAccessToken('Claude External Credential');
+            req.setHeader('x-api-key', apiKey);
 
             req.setTimeout(120000);
 
