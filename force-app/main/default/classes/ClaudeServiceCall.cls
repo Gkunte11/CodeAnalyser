@@ -12,6 +12,8 @@ public with sharing class ClaudeServiceCall {
             req.setMethod('POST');
             req.setHeader('Accept', 'application/json');
             req.setHeader('Content-Type', 'application/json');
+            req.setHeader('anthropic-version', '2023-06-01');
+
             req.setTimeout(120000);
 
             String prompt = 'You\'re an expert Software Engineer. Explain the provided code line by line in a JSON format. The return response format should be with ' + 
@@ -40,8 +42,6 @@ public with sharing class ClaudeServiceCall {
             };
 
             req.setBody(JSON.serialize(payload));
-
-            
             HttpResponse resp = http.send(req);
 
             if(resp.getStatusCode() >= 200 && resp.getStatusCode() < 300){
