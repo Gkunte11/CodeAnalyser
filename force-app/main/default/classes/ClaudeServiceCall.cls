@@ -107,7 +107,7 @@ public with sharing class ClaudeServiceCall {
                 Claude_Response__c = claudeResponse,
                 Optimization_Suggestions__c = optimizations;
                 Optimization_Requested__c = optimizationRequested
-                //Processed__c = 
+                // = 
                 //Status__c = 
                 //User__c = 
             )
