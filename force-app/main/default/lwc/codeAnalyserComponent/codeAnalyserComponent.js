@@ -1,6 +1,6 @@
 import { LightningElement } from 'lwc';
 import explainCode from '@salesforce/apex/ClaudeServiceCall.explainCode';
-import getFileContent from '@salesforce/apex/ClaudeServiceCall.getFileContent';
+import getFileContent from '@salesforce/apex/ClaudeFileHandler.getFileContent';
 
 export default class CodeAnalyserComponent extends LightningElement {
 
