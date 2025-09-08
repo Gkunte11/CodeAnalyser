@@ -16,6 +16,13 @@
 
                 </lightning-file-upload>
 
+                <template if:true={uploadedFileName}>
+                    <p class="slds-m-top_small">Uploaded File:</p>
+                    <ul>
+                        <li key={fileName}>{fileName}</li>
+                    </ul>
+                </template>
+
             </div>
 
             <div class="slds-m-top_small">

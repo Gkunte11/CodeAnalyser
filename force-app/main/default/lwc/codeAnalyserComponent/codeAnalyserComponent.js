@@ -7,6 +7,7 @@ export default class CodeAnalyserComponent extends LightningElement {
     code = '';
     explanation = ''
     lineByLine = false;
+    uploadedFileName = '';
 
     handleInputChange(event){
         this.code = event.target.value;
@@ -38,8 +39,11 @@ export default class CodeAnalyserComponent extends LightningElement {
                 .then(result => { this.code = result; })
                 .catch(error => { console.error(error); });
 
+            this.uploadedFileName = file.name;
 
         }
+
+        
     }
 
     explainCodeSnippet(){
