@@ -38,13 +38,9 @@ export default class CodeAnalyserComponent extends LightningElement {
                 return;
             }
 
-            getFileContent({contentDocumentId: file.DocumentId})
-                .then(result => {
-                    this.code = result;
-                })
-                .catch(error => {
-                    console.error(error);
-                });
+            getFileContent({ contentDocumentId: file.documentId })
+                .then(result => { this.code = result; })
+                .catch(error => { console.error(error); });
 
 
         }
