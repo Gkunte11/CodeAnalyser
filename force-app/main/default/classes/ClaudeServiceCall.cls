@@ -31,7 +31,7 @@ public with sharing class ClaudeServiceCall {
     public static string explainCode(String codeSnippet, Boolean lineByLine){
         
 
-            String prompt = 'You\'re an expert Software Engineer. Explain the code';
+            String prompt = 'You are an expert Software Engineer. Explain the code';
             
             if(lineByLine){
 
