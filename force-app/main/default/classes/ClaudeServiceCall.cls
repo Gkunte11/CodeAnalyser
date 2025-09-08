@@ -10,14 +10,15 @@
     
 
     Phase 3 of this project:
-        1. Include Batch Processing for larger files or bigger codes 
-        2. Optimization suggestion option
-        3. Whenever the code is pasted or when the file is uploaded, create a record of the interaction on a custom object that stores the input code, 
+        
+        1. Optimization suggestion option
+        2. Whenever the code is pasted or when the file is uploaded, create a record of the interaction on a custom object that stores the input code, 
            optimization suggestions, claude raw response and file attachments
 
     Phase 4 of this project:
         1. Ensure the security checks are consistent as there shouldn't be any malicious files or codes being uploaded
         2. Ensure the file size is not more than 1 mb as it might lead to performance issues with Claude
+        3. Include Batch Processing for larger files or bigger codes 
 */
 
 
