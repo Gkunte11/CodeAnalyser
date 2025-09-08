@@ -126,7 +126,7 @@ public with sharing class ClaudeServiceCall {
     //deserializing the JSON response and extracting the "text" key to check if the keywords exist based on performance improvement or optimization suggestions and returning the text
     public static String getOptimizationSuggestions(String claudeResponse){
 
-        if (String.isBlank(rawResponse)) {
+        if (String.isBlank(claudeResponse)) {
             return '';
         }
 
@@ -143,7 +143,7 @@ public with sharing class ClaudeServiceCall {
                     
                     String optText = (String) contentMap.get('text');
                     
-                    if(optText != null && (text.toLowerCase().contains('optimize') || text.toLowerCase().contains('improve')) || text.toLowerCase().contains('best practices') || text.toLowerCase().contains('performance') || text.toLowerCase().contains('optimization')){
+                    if(optText != null && (optText.toLowerCase().contains('optimize') || optText.toLowerCase().contains('improve')) || optText.toLowerCase().contains('best practices') || optText.toLowerCase().contains('performance') || optText.toLowerCase().contains('optimization')){
                         return optText;
                     }
                     else{
