@@ -23,7 +23,7 @@ export default class CodeAnalyserComponent extends LightningElement {
         if(uploadedfile.length > 0){
 
             const file = uploadedfile[0];
-            const allowedFileExtensions = ['.java','.py','.js','.html','.css','.php','.c','.cpp','.cs','.cls'];
+            const allowedFileExtensions = ['java','py','js','html','css','php','c','cpp','cs','cls'];
             const maxFileSize = 1000000;
             
             const ext = file.name.split('.').pop().toLowerCase();
