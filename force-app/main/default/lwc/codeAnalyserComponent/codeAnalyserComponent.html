@@ -8,15 +8,16 @@
 
             <div class="slds-m-top_small">
 
-                <lightning-input type="checkbox" label="Explain line by line" onchange={handleLineByLineChange}></lightning-input>
+                <lightning-file-upload label="Upload your code" accept=".java,.py,.js,.html,.css,.php,.c,.cpp,.cs" onuploadfinished={handleUploadFinished}></lightning-file-upload>
 
             </div>
 
             <div class="slds-m-top_small">
 
-                <lightning-file-upload label="Upload your code" accept=".java,.py,.js,.html,.css,.php,.c,.cpp,.cs" onuploadfinished={handleUploadFinished}></lightning-file-upload>
+                <lightning-input type="checkbox" label="Explain line by line" onchange={handleLineByLineChange}></lightning-input>
 
             </div>
+
 
             <div class="slds-m-top_small">
                 <lightning-button label="Explain" onclick={explainCodeSnippet}></lightning-button>
