@@ -43,7 +43,7 @@ export default class CodeAnalyserComponent extends LightningElement {
     }
 
     explainCodeSnippet(){
-        explainCode({codeSnippet: this.code})
+        explainCode({codeSnippet: this.code , lineByLine: this.lineByLine})
             .then(result => {
                 this.explanation = result;
             })
