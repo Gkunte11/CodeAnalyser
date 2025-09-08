@@ -105,12 +105,12 @@ public with sharing class ClaudeServiceCall {
                 Input_code__c = codeSnippet,
                 Line_by_Line__c = lineByLine,
                 Claude_Response__c = claudeResponse,
-                Optimization_Suggestions__c = optimizations;
+                Optimization_Suggestions__c = optimizations,
                 Optimization_Requested__c = optimizationRequested
                 // = 
                 //Status__c = 
                 //User__c = 
-            )
+            );
 
             insert history;
             return claudeResponse;
@@ -144,7 +144,7 @@ public with sharing class ClaudeServiceCall {
                     String optText = (String) contentMap.get('text');
                     
                     if(optText != null && (text.toLowerCase().contains('optimize') || text.toLowerCase().contains('improve')) || text.toLowerCase().contains('best practices') || text.toLowerCase().contains('performance') || text.toLowerCase().contains('optimization')){
-                        return optText
+                        return optText;
                     }
                     else{
                         return 'No optimizations were suggested by Claude';
