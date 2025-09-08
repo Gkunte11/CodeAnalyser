@@ -8,6 +8,7 @@ export default class CodeAnalyserComponent extends LightningElement {
     explanation = ''
     lineByLine = false;
     uploadedFileName = '';
+    optimizationRequested = false;
 
     handleInputChange(event){
         this.code = event.target.value;
@@ -16,6 +17,10 @@ export default class CodeAnalyserComponent extends LightningElement {
     handleLineByLineChange(event){
 
         this.lineByLine = event.target.checked;
+    }
+
+    handleOptimizations(event){
+        this.optimizationRequested = event.target.checked;
     }
 
     handleUploadFinished(event){
@@ -42,12 +47,11 @@ export default class CodeAnalyserComponent extends LightningElement {
             this.uploadedFileName = file.name;
 
         }
-
         
     }
 
     explainCodeSnippet(){
-        explainCode({codeSnippet: this.code , lineByLine: this.lineByLine})
+        explainCode({codeSnippet: this.code , lineByLine: this.lineByLine, optimizationRequested: this.optimizationRequested})
             .then(result => {
                 this.explanation = result;
             })

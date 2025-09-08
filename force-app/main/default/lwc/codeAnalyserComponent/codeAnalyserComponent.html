@@ -31,9 +31,15 @@
 
             </div>
 
+            <div class="slds-m-top_small">
+
+                <lightning-input type="checkbox" label="Suggest Optimizations" onchange={handleOptimizations}></lightning-input>
+
+            </div>
+
 
             <div class="slds-m-top_small">
-                <lightning-button label="Explain" onclick={explainCodeSnippet}></lightning-button>
+                <lightning-button label="Analyze" onclick={explainCodeSnippet}></lightning-button>
             </div>
         
             <div class="slds-m-top_medium">
