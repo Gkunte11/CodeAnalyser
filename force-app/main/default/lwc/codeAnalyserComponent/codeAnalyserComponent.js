@@ -32,11 +32,6 @@ export default class CodeAnalyserComponent extends LightningElement {
                 alert('Please upload a valid file. Only the following files are allowed: ' + allowedFileExtensions.join(','));
             }
 
-            if(file.size > maxFileSize){
-
-                alert('File size should be less than 1 MB');
-                return;
-            }
 
             getFileContent({ contentVersionId: file.contentVersionId })
                 .then(result => { this.code = result; })

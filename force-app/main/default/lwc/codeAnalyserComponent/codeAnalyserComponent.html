@@ -8,7 +8,13 @@
 
             <div class="slds-m-top_small">
 
-                <lightning-file-upload label="Upload your code" accept=".java,.py,.js,.html,.css,.php,.c,.cpp,.cs,.cls" onuploadfinished={handleUploadFinished}></lightning-file-upload>
+                <lightning-file-upload 
+                    label="Upload your code" 
+                    accept=".java,.py,.js,.html,.css,.php,.c,.cpp,.cs,.cls" 
+                    onuploadfinished={handleUploadFinished}
+                    max-file-size="1">
+
+                </lightning-file-upload>
 
             </div>
 
