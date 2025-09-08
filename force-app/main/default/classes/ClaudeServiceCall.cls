@@ -5,11 +5,15 @@
     Phase 2 of this project: 
     
         1. Add the ability to upload a file or paste the code snippet 
-        2. Add the optional ability to explain the code line by line - need changes in the prompt of the service class
+        2. Add the optional ability to explain the code line by line 
+        3. Add the ability to upload only a selected type of files. 
+    
 
     Phase 3 of this project:
         1. Include Batch Processing for larger files or bigger codes 
         2. Pptimization suggestion option
+        3. Whenever the code is pasted or when the file is uploaded, create a record of the interaction on a custom object that stores the input code, 
+           optimization suggestions, claude raw response and file attachments
 
     Phase 4 of this project:
         1. Ensure the security checks are consistent as there shouldn't be any malicious files or codes being uploaded

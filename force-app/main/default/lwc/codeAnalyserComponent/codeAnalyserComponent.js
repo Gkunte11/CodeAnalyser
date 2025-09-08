@@ -5,9 +5,48 @@ export default class CodeAnalyserComponent extends LightningElement {
 
     code = '';
     explanation = ''
+    lineByLine = false;
 
     handleInputChange(event){
         this.code = event.target.value;
+    }
+
+    handleLineByLineChange(event){
+
+        this.lineByLine = event.target.checked;
+    }
+
+    handleUploadFinished(event){
+
+        const file = event.detail.files[0];
+        const allowedFileExtensions = ['.java','.py','.js','.html','.css','.php','.c','.cpp','.cs'];
+        const maxFileSize = 1000000;
+        if(file){
+
+            const ext = file.name.split('.').pop().toLowerCase();
+
+            if(allowedFileExtensions.includes(ext)){
+                this.code = file;
+            }else{
+                alert('Please upload a valid file. Only ${this.allowedExtensions.join(', ')} files are allowed.`');
+            }
+
+            if(file.size > maxFileSize){
+
+                alert('File size should be less than 1 MB');
+                return;
+            }
+
+            getFileContent(file)
+                .then(content => {
+                    this.code = content;
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+
+
+        }
     }
 
     explainCodeSnippet(){
