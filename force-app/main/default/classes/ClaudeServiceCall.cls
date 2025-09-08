@@ -96,9 +96,11 @@ public with sharing class ClaudeServiceCall {
 
         if(resp.getStatusCode() >= 200 && resp.getStatusCode() < 300){
 
+            String optimizations;
+
             if(optimizationRequested){
 
-                String optimizations = getOptimizationSuggestions(claudeResponse);
+                optimizations = getOptimizationSuggestions(claudeResponse);
             }
             Code_Analysis_History__c history = new 	Code_Analysis_History__c(
 
