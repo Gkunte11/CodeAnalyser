@@ -31,11 +31,11 @@ public with sharing class ClaudeServiceCall {
     public static string explainCode(String codeSnippet, Boolean lineByLine){
         
 
-            String prompt = 'You\'re an expert Software Engineer. Explain the code'
+            String prompt = 'You\'re an expert Software Engineer. Explain the code';
             
             if(lineByLine){
 
-                prompt += ' in a line-by-line JSON format. The JSON format should return with fields: explanation, line_by_line'
+                prompt += ' in a line-by-line JSON format. The JSON format should return with fields: explanation, line_by_line';
             }
                 
             prompt += ':\n\n' + codeSnippet;
