@@ -4,7 +4,11 @@
         <div class="slds-m-top_medium">
 
 
-            <lightning-textarea label="Paste your code" placeholder="You can paste any code for Claude to analyze" onchange={handleInputChange}></lightning-textarea>
+            <lightning-textarea 
+                label="Paste your code" 
+                placeholder="You can paste any code for Claude to analyze" 
+                onchange={handleInputChange}>
+            </lightning-textarea>
 
             <div class="slds-m-top_small">
 
@@ -12,8 +16,8 @@
                     label="Upload your code" 
                     accept=".java,.py,.js,.html,.css,.php,.c,.cpp,.cs,.cls" 
                     onuploadfinished={handleUploadFinished}
-                    max-file-size="1">
-
+                    max-file-size="1"
+                    multiple="false">
                 </lightning-file-upload>
 
                 <template if:true={uploadedFileName}>
@@ -27,19 +31,30 @@
 
             <div class="slds-m-top_small">
 
-                <lightning-input type="checkbox" label="Explain line by line" onchange={handleLineByLineChange}></lightning-input>
+                <lightning-input 
+                    type="checkbox" 
+                    label="Explain line by line" 
+                    onchange={handleLineByLineChange}>
+                </lightning-input>
 
             </div>
 
             <div class="slds-m-top_small">
 
-                <lightning-input type="checkbox" label="Suggest Optimizations" onchange={handleOptimizations}></lightning-input>
+                <lightning-input 
+                    type="checkbox" 
+                    label="Suggest Optimizations" 
+                    onchange={handleOptimizations}>
+                </lightning-input>
 
             </div>
 
 
             <div class="slds-m-top_small">
-                <lightning-button label="Analyze" onclick={explainCodeSnippet}></lightning-button>
+                <lightning-button 
+                    label="Analyze" 
+                    onclick={explainCodeSnippet}>
+                </lightning-button>
             </div>
         
             <div class="slds-m-top_medium">

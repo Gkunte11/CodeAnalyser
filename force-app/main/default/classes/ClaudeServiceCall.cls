@@ -19,6 +19,9 @@
         1. Ensure the security checks are consistent as there shouldn't be any malicious files or codes being uploaded
         2. Ensure the file size is not more than 1 mb as it might lead to performance issues with Claude
         3. Include Batch Processing for larger files or bigger codes 
+
+
+        ****NOTE: Try saving the JSON in pretty format
 */
 
 
@@ -31,6 +34,11 @@ public with sharing class ClaudeServiceCall {
     @AuraEnabled(cacheable=false)
     public static string explainCode(String codeSnippet, Boolean lineByLine, Boolean optimizationRequested){
         
+        Anthropic_Credential__mdt cred = [
+            SELECT Api_Key__c FROM Anthropic_Credential__mdt LIMIT 1
+            ];
+    
+        String apiKey = cred.Api_Key__c;
 
 
         if(codeSnippet == null || codeSnippet == ''){
@@ -38,14 +46,10 @@ public with sharing class ClaudeServiceCall {
         }
 
         String prompt = 'You are an expert Software Engineer. Analyse the code and provide  an explanation of the code.';
-        
         if(lineByLine){
-
             prompt += ' Provide a line-by-line explanation of the code in JSON format. The JSON format should return with fields: explanation, line_by_line. ';
         }
-
         if(optimizationRequested){
-
             prompt += ' Provide suggestions on how to make the code optimized, if there are any performance improvement steps to carry and if there are any best practices that need to be followed';
         }
             
@@ -59,7 +63,6 @@ public with sharing class ClaudeServiceCall {
 
         */
 
-
         Map<String,Object> payload = new Map<String,Object>{
 
             'model' => 'claude-sonnet-4-20250514',
@@ -72,12 +75,7 @@ public with sharing class ClaudeServiceCall {
             }
         };
 
-        Anthropic_Credential__mdt cred = [
-            SELECT Api_Key__c FROM Anthropic_Credential__mdt LIMIT 1
-            ];
-    
-        String apiKey = cred.Api_Key__c;
-
+        
         Http http = new Http();
         HttpRequest req = new HttpRequest();
         req.setEndPoint(namedCred + '/v1/messages');
@@ -110,9 +108,6 @@ public with sharing class ClaudeServiceCall {
                 Claude_Response__c = claudeResponse,
                 Optimization_Suggestions__c = optimizations,
                 Optimization_Requested__c = optimizationRequested
-                // = 
-                //Status__c = 
-                //User__c = 
             );
 
             insert history;
