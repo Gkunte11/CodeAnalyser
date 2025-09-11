@@ -1,4 +1,4 @@
-public with sharing class CodeAnalysisBatchJob implements Queueable, Database.AllowCallouts{
+public with sharing class CodeAnalysisBatchJob implements Queueable, Database.AllowsCallouts{
 
     private String contentDocumentId;
     private Id historyId;
@@ -26,6 +26,7 @@ public with sharing class CodeAnalysisBatchJob implements Queueable, Database.Al
         String content =  cv.VersionData.toString();
 
         List<String> chunks = ChunkUtils.chunkCode(content, 200);
+        
 
         String finalExplanation = '';
 

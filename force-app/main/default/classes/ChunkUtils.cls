@@ -1,7 +1,7 @@
 public with sharing class ChunkUtils {
     
     
-    public static List<String> ChunkUtils(String code, Integer chunkSize) {
+    public static List<String> chunkCode(String code, Integer chunkSize) {
 
         if(String.isBlank(code)){
 
@@ -14,7 +14,15 @@ public with sharing class ChunkUtils {
 
         for(Integer i = 0; i<lines.size(); i += chunkSize){
 
-            List<String> splitPart = lines.subList(i, Math.min(i + chunkSize, lines.size()));
+            Integer endPart = Math.min(i + chunkSize, lines.size());
+            List<String> splitPart = new List<String>();
+
+
+            for(Integer j=i; j<endPart; j++){
+                
+                splitPart.add(lines[j]);
+            }
+
             chunks.add(String.join(splitPart, '\n'));
         }
 

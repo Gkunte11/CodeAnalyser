@@ -18,7 +18,6 @@ public with sharing class ClaudeFileHandler {
             Input_code__c = null,
             Line_by_Line__c = lineByLine,
             Optimization_Requested__c = optimizationRequested,
-            Status__c = 'Queued',
             Processed__c = false
         );
 

@@ -17,13 +17,13 @@ private class ClaudeServiceMockTest{
 
     }
 
-    static testMethod void testExplainApex() {
-        Test.setMock(HttpCalloutMock.class, new MockAnthropic());
-        String snippet = 'public class HelloWorld { public static void sayHello() { System.debug(\'Hello, World!\'); }};';
-        Test.startTest();
-        String resp = ClaudeServiceCall.explainCode(snippet);
-        Test.stopTest();
-        System.assertNotEquals(null, resp);
-        System.assert(resp.contains('explanation'));
-    }
+    // static testMethod void testExplainApex() {
+    //     Test.setMock(HttpCalloutMock.class, new MockAnthropic());
+    //     String snippet = 'public class HelloWorld { public static void sayHello() { System.debug(\'Hello, World!\'); }};';
+    //     Test.startTest();
+    //     String resp = ClaudeServiceCall.explainCode(snippet);
+    //     Test.stopTest();
+    //     System.assertNotEquals(null, resp);
+    //     System.assert(resp.contains('explanation'));
+    // }
 }

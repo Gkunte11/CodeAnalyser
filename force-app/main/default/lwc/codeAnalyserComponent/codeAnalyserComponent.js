@@ -1,6 +1,6 @@
 import { LightningElement } from 'lwc';
 import explainCode from '@salesforce/apex/ClaudeServiceCall.explainCode';
-import fileBatch from '@salesforce/apex/ClaudeFileHandler.getFileContent';
+import fileBatch from '@salesforce/apex/ClaudeFileHandler.fileBatch';
 
 export default class CodeAnalyserComponent extends LightningElement {
 
@@ -66,6 +66,8 @@ export default class CodeAnalyserComponent extends LightningElement {
 
         if(this.uploadedFileId){
 
+            console.log("In the uploadedFileId block");
+            console.log("this.uploadedFileId: " + this.uploadedFileId);
             fileBatch({
 
                 contentDocumentId: this.uploadedFileId,
