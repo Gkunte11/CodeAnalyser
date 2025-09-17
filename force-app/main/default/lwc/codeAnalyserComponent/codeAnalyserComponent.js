@@ -4,12 +4,28 @@ import fileBatch from '@salesforce/apex/ClaudeFileHandler.fileBatch';
 
 export default class CodeAnalyserComponent extends LightningElement {
 
+
     code = '';
     explanation = ''
     lineByLine = false;
     uploadedFileName = '';
     optimizationRequested = false;
     uploadedFileId = '';
+
+    isProcessing = false;
+    currentHistoryId = null;
+    
+    pollHandle = null;
+    pollingIntervals = 3000;
+    processingMessage = '';
+
+    results = {};
+    resultsAvailable = false;
+
+    lineByLineItems = [];
+
+    activeTab = 'analyze';
+
 
     handleInputChange(event){
         this.code = event.target.value;
@@ -21,7 +37,11 @@ export default class CodeAnalyserComponent extends LightningElement {
     }
 
     handleOptimizations(event){
-        this.optimizationRequested = event.target.checked;
+        this.optimizationRequested = event.detail.activeTabValue;
+    }
+
+    handleTabChange(event){
+        this.activeTab = event.detail.value;
     }
 
     handleUploadFinished(event){
@@ -53,57 +73,73 @@ export default class CodeAnalyserComponent extends LightningElement {
         
     }
 
-    explainCodeSnippet(){
-        // explainCode({codeSnippet: this.code , lineByLine: this.lineByLine, optimizationRequested: this.optimizationRequested})
-        //     .then(result => {
-        //         this.explanation = result;
-        //     })
-        //     .catch(error => {
-        //         console.error(error);
-        //     });
+    startAnalyzingFile(){
 
-        // Modifying the above action to handle file upload and copy/paste process differently. The File upload will be handled via batch processing as the code files might be bigger in size
-
-        if(this.uploadedFileId){
-
-            console.log("In the uploadedFileId block");
-            console.log("this.uploadedFileId: " + this.uploadedFileId);
-            fileBatch({
-
-                contentDocumentId: this.uploadedFileId,
-                lineByLine: this.lineByLine,
-                optimizationRequested: this.optimizationRequested
-            })
-            .then(result => {
-                this.explanation = 'Batch processing started for the uploaded file. The following Code Analysis History record will be updated as soon as the processing has completed: ' + result;
-            })
-            .catch(error => {
-                console.error(error);
-                this.explanation = 'Error: ' + error;
-            });
-
+        if(!this.uploadedFileId){
+            this.processingMessage = 'Please upload a file';
+            return;
         }
 
-        else if(this.code){
+        this.processingMessage = 'Analyzing the file contents...';
+        this.isProcessing = true;
 
-            explainCode({
-                codeSnippet: this.code, 
-                lineByLine: this.lineByLine, 
-                optimizationRequested: this.optimizationRequested
+        startFileAnalysis({contentDocumentId: this.uploadedFileId, lineByLine: this.lineByLine,optimizationRequested: this.optimizationRequested})
+            .then(historyId => {
+
+                this.currentHistoryId = historyId;
+                this.processingMessage = 'Processing the file contents of record ' + historyId + '...';
+
+                //start polling to continuously check for updates
+
+                this.startPolling();
+                this.activeTab = 'results';
             })
-            .then(result => {
-                this.explanation = 'The pasted code will be handled synchronously. Code Analysis History record: ' + result;
-            })
-            .catch(error => {
-                console.error(error);
-                this.explanation = 'Error: ' + error;
-            });
 
-        }
+            .catch(error =>{
 
-        else{
+                this.isProcessing = false;
+                this.processingMessage = 'File analysis error: ' + error;
+            })           
 
-            this.explaination = 'Please upload a file or paste the code in the text area.';
-        }
     }
+
+    analyzePaste(){
+
+        if(!this.code){
+            this.processingMessage = 'Please paste the code in the text area';
+            return;
+        }
+
+        this.isProcessing = true;
+        this.processingMessage = 'Analyzing the pasted code...';
+
+        startPasteAnalysis({ codeSnippet: this.code, lineByLine: this.lineByLine, optimizationRequested: this.optimizationRequested})
+            .then(jsonString => {
+
+                const out = JSON.parse(jsonString);
+                this.currentHistoryId = out.historyId;
+                
+                this.processingMessage = 'Analysis completed';
+                this.isProcessing = false;
+
+                this.fetchResults(out.historyId);
+                this.activeTab = 'results';
+
+                
+            })
+
+            .catch(error =>{
+
+                this.isProcessing = false;
+                this.processingMessage = 'Pasted code analysis error: ' + error;
+            })
+    }
+
+    
+    startPolling(){
+
+        
+    }
+
+
 }

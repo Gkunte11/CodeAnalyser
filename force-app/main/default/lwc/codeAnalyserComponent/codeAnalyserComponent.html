@@ -4,62 +4,117 @@
         <div class="slds-m-top_medium">
 
 
-            <lightning-textarea 
-                label="Paste your code" 
-                placeholder="You can paste any code for Claude to analyze" 
-                onchange={handleInputChange}>
-            </lightning-textarea>
+            <lightning-tabset active-tab-value={activeTab} onactive={handleTabChange}>
 
-            <div class="slds-m-top_small">
+                <lightning-tab label="Analyze Code" value="analyze">
 
-                <lightning-file-upload 
-                    label="Upload your code" 
-                    accept=".java,.py,.js,.html,.css,.php,.c,.cpp,.cs,.cls" 
-                    onuploadfinished={handleUploadFinished}
-                    max-file-size="1"
-                    multiple="false">
-                </lightning-file-upload>
+                    <div class="slds-m-top_small">
 
-                <template if:true={uploadedFileName}>
-                    <p class="slds-m-top_small">Uploaded File:</p>
-                    <ul>
-                        <li>{uploadedFileName}</li>
-                    </ul>
-                </template>
-
-            </div>
-
-            <div class="slds-m-top_small">
-
-                <lightning-input 
-                    type="checkbox" 
-                    label="Explain line by line" 
-                    onchange={handleLineByLineChange}>
-                </lightning-input>
-
-            </div>
-
-            <div class="slds-m-top_small">
-
-                <lightning-input 
-                    type="checkbox" 
-                    label="Suggest Optimizations" 
-                    onchange={handleOptimizations}>
-                </lightning-input>
-
-            </div>
-
-
-            <div class="slds-m-top_small">
-                <lightning-button 
-                    label="Analyze" 
-                    onclick={explainCodeSnippet}>
-                </lightning-button>
-            </div>
+                        <h3 class="slds-m-heading_small">File Upload</h3>
+                        <lightning-file-upload 
+                            label="Upload your code file" 
+                            accept=".java,.py,.js,.html,.css,.php,.c,.cpp,.cs,.cls" 
+                            onuploadfinished={handleUploadFinished}
+                            max-file-size="1"
+                            multiple="false">
+                        </lightning-file-upload>
         
-            <div class="slds-m-top_medium">
-                <pre>{explanation}</pre>
-            </div>
+                        <template if:true={uploadedFileName}>
+                            <p class="slds-m-top_small">Uploaded File:</p>
+                            <ul>
+                                <li>{uploadedFileName}</li>
+                            </ul>
+                            <lightning-button variant="Success" label="Analyze code" onclick={startAnalyzingFile}></lightning-button>
+                        </template>
+        
+                    </div>
+
+                    <hr></hr>
+
+                    <div class="slds-m-top_medium">
+
+                        <lightning-accordion allow-multiple-sections-open>
+                            <lightning-accordion-section name="quickTest" label="Quick Test (Paste Code)">
+                                
+                                <lightning-textarea 
+                                    label="Paste your code" 
+                                    placeholder="You can paste any code for Claude to analyze" 
+                                    onchange={handleInputChange}>
+                                </lightning-textarea>
+
+                                <div class="slds-m-top_small">
+                                    <lightning-button label="Analyze Paste" variant="brand" onclick={analyzePaste}></lightning-button>
+                                </div>
+                            </lightning-accordion-section>
+                        </lightning-accordion>
+
+                    </div> 
+
+                    <div class="slds-m-top_small">
+
+                        <lightning-input 
+                            type="checkbox" 
+                            label="Explain line by line" 
+                            onchange={handleLineByLineChange}
+                            checked={lineByLine}>
+                        </lightning-input>
+        
+                    </div>
+        
+                    <div class="slds-m-top_small">
+        
+                        <lightning-input 
+                            type="checkbox" 
+                            label="Suggest Optimizations" 
+                            onchange={handleOptimizations}
+                            checked={optimizationsRequested}>
+                        </lightning-input>
+        
+                    </div>
+           
+                </lightning-tab>
+
+
+                <lighhtning-tab label="Results" value="results">
+
+                    <div class="slds-m-around_medium">
+                        <template if:true={resultsAvailable}>
+                            
+                            <h3 class="slds-text-heading_small">Summary</h3>
+                            
+                            <p><strong>Status:</strong> {results.status}</p>
+                            <p><strong>History ID:</strong> <a href={historyRecordUrl} target="_blank">{results.historyId}</a></p>
+                            <p><strong>Created:</strong> {results.createdDate}</p>
+
+                            <hr/>
+
+                            <h4 class="slds-text-heading_small">Optimizations</h4>
+                            <pre class="slds-box slds-theme_shade">{results.optimizationSuggestions}</pre>
+
+                            <template if:true={hasLineByLine}>
+                                <h4 class="slds-text-heading_small slds-m-top_small">Line-by-line (parsed)</h4>
+                                <template if:true={lineByLineItems}>
+                                    <ol>
+                                        <template for:each={lineByLineItems} for:item="item">
+                                            <li key={item.line}><strong>Line {item.line}:</strong> {item.explanation}</li>
+                                        </template>
+                                    </ol>
+                                </template>
+                            </template>
+
+                        </template>
+
+                        <template if:false={resultsAvailable}>
+                            <p>No results available. Run an analysis and then open this tab.</p>
+                        </template>
+                    </div>
+
+                </lighhtning-tab>
+
+
+
+            </lightning-tabset>
+            
 
         </div>
         
