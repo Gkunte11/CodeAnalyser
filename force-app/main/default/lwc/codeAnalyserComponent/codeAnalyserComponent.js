@@ -2,6 +2,7 @@ import { LightningElement } from 'lwc';
 import startFileAnalysis from '@salesforce/apex/ClaudeServiceCall.startFileAnalysis';
 import startPasteAnalysis from '@salesforce/apex/ClaudeServiceCall.startPasteAnalysis';
 import getHistoryResults from '@salesforce/apex/ClaudeServiceCall.getHistoryResults';
+import getHistoryStatus from '@salesforce/apex/ClaudeServiceCall.getHistoryStatus';
 //import fileBatch from '@salesforce/apex/ClaudeFileHandler.fileBatch';
 
 export default class CodeAnalyserComponent extends LightningElement {
@@ -141,22 +142,34 @@ export default class CodeAnalyserComponent extends LightningElement {
     
     startPolling(){
         // clear prior handle
+
+        console.log('i am inside the polling call');
+
         if (this.pollHandle) {
             clearInterval(this.pollHandle);
             this.pollHandle = null;
         }
+        this.isProcessing = true;
         this.pollHandle = setInterval(() => {
-            if (!this.currentHistoryId) return;
+            if (!this.currentHistoryId) {
+
+                return;
+            }
+            
             getHistoryStatus({ historyId: this.currentHistoryId })
                 .then(jsonStr => {
                     const st = JSON.parse(jsonStr);
                     this.processingMessage = 'Status: ' + st.status;
+                    
                     if (st.processed === true) {
                         // done - stop polling and fetch results
                         clearInterval(this.pollHandle);
                         this.pollHandle = null;
                         this.isProcessing = false;
+                        
                         this.fetchResults(this.currentHistoryId);
+
+                        console.log('i am inside the history status return call of the js file to test the polling');
                        
                     }
                 })
@@ -179,11 +192,11 @@ export default class CodeAnalyserComponent extends LightningElement {
                     historyId: out.historyId,
                     rawResponse: out.rawResponse || '',
                     optimizationSuggestions: out.optimizationSuggestions || '',
-                    inputCode: out.inputCode || '',
-                    createdDate: out.createdDate || '',
-                    status: out.status || ''
+                    inputCode: out.inputCode
+                
                 };
                 this.resultsAvailable = true;
+                console.log('i am inside the get history results call of the js file');
                 // attempt to parse line-by-line from rawResponse if model produced a JSON candidate
                 this._tryParseLineByLine(out.rawResponse);
             })
@@ -197,7 +210,7 @@ export default class CodeAnalyserComponent extends LightningElement {
         // If the model purposely returned a JSON block with "line_by_line" or "line_by_line" array,
         // attempt to extract it. This is heuristic — if model output isn't JSON this will fail silently.
         this.lineByLineItems = [];
-        this.hasLineByLine = false;
+        this.lineByLine = false;
         if (!raw) return;
 
         // Try parse as JSON (models sometimes return wrapped text; use a try/catch)

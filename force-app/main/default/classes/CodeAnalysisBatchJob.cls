@@ -5,6 +5,9 @@ public with sharing class CodeAnalysisBatchJob implements Database.Batchable<SOb
     private Boolean lineByLine;
     private Boolean optimizationRequested;
 
+    private StringBuilder explanations = new StringBuilder();
+    private StringBuilder optimizationsResult = new StringBuilder();
+
     public CodeAnalysisBatchJob(String contentDocumentId, Id historyId, Boolean lineByLine, Boolean optimizationRequested) {
         this.contentDocumentId = contentDocumentId;
         this.historyId = historyId;
@@ -38,12 +41,25 @@ public with sharing class CodeAnalysisBatchJob implements Database.Batchable<SOb
 
             String response = ClaudeServiceCall.explainFileCode(chunk, lineByLine, optimizationRequested);
 
+            Map<String, Object> parsedString = (Map<String,Object>) JSON.deserializeUntyped(response);
+            if(parsedString.containsKey('explanation')){
+
+                explanations.append((String) parsed.get('explanation')).append('\n\n');
+
+            }
+
+            if(parsedString.containsKey('optimizations')){
+
+                optimizations.append((String) parsed.get('optimizations')).append('\n\n');
+
+            }
             finalExplanation += response + '\n\n';
         }
         
         Code_Analysis_History__c history = [Select Id from Code_Analysis_History__c where Id =: historyId limit 1];
 
-        history.Claude_Response__c = finalExplanation;
+        history.Claude_Response__c = response;
+        history.Explanation__c = 
         history.Processed__c = true;
         history.Status__c = 'Completed';
 

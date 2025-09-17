@@ -1,32 +1,3 @@
-/* 
-
-    Phase 1 of this project: Create a simple LWC component that takes in a code snippet and returns a JSON response from Claude AI. 
-    
-    Phase 2 of this project: 
-    
-        1. Add the ability to upload a file or paste the code snippet 
-        2. Add the optional ability to explain the code line by line 
-        3. Add the ability to upload only a selected type of files. 
-    
-
-    Phase 3 of this project:
-        
-        1. Optimization suggestion option
-        2. Whenever the code is pasted or when the file is uploaded, create a record of the interaction on a custom object that stores the input code, 
-           optimization suggestions, claude raw response and file attachments
-
-    Phase 4 of this project:
-        1. Ensure the security checks are consistent as there shouldn't be any malicious files or codes being uploaded
-        2. Ensure the file size is not more than 1 mb as it might lead to performance issues with Claude
-        3. Include Batch Processing for larger files or bigger codes 
-
-
-        ****NOTE: Try saving the JSON in pretty format
-*/
-
-
-
-
 public with sharing class ClaudeServiceCall {
 
     private static final String namedCred = 'callout:ClaudeAI';
@@ -71,18 +42,14 @@ public with sharing class ClaudeServiceCall {
                     throw new CalloutException('Code snippet cannot be empty');
                 }
 
-                String prompt = 'You are an expert Software Engineer. Analyse the code and provide  an explanation of the code.';
+                String prompt = 'You are an expert software engineer. Analyze the provided code. ' +
+                        'Return a JSON object with two fields: ' +
+                        '"explanation" (a clear explanation of what the code does) and ' +
+                        '"optimizations" (suggested improvements or performance/best-practice changes). ' +
+                        'If a line-by-line explanation is requested, include that inside "explanation".' +
+                        '\n\nCode:\n' + codeSnippet;
             
-                if(lineByLine){
-                    prompt += ' Provide a line-by-line explanation of the code in JSON format. The JSON format should return with fields: explanation, line_by_line. ';
-                }
-        
-                if(optimizationRequested){
-                    prompt += ' Provide suggestions on how to make the code optimized, if there are any performance improvement steps to carry and if there are any best practices that need to be followed';
-                }
-            
-                prompt += '\n\nHere is the code: \n' + codeSnippet;
-
+                
                 /*
         
                     Apex doesn’t have a direct JSON object literal like JavaScript. 
@@ -277,6 +244,7 @@ public with sharing class ClaudeServiceCall {
     @AuraEnabled
     public static String getHistoryResults(String historyId){
 
+        System.debug('I\'m in the history results section to test polling');
         if (historyId == null){
 
             throw new AuraHandledException('Missing historyId');
@@ -284,22 +252,42 @@ public with sharing class ClaudeServiceCall {
         
         
 
-        Code_Analysis_History__c h = [
-            SELECT Id, Claude_Response__c, Optimization_Suggestions__c, Input_Code__c, CreatedDate, Status__c
+        Code_Analysis_History__c history = [
+            SELECT Id, Claude_Response__c, Optimization_Suggestions__c, Input_Code__c, Explanation__c, Status__c
             FROM Code_Analysis_History__c
             WHERE Id = :historyId LIMIT 1
         ];
 
         Map<String,Object> out = new Map<String,Object>{
-            'historyId' => h.Id,
-            'rawResponse' => (h.Claude_Response__c == null ? '' : h.Claude_Response__c),
-            'optimizationSuggestions' => (h.Optimization_Suggestions__c == null ? '' : h.Optimization_Suggestions__c),
-            'inputCode' => (h.Input_Code__c == null ? '' : h.Input_Code__c),
-            'createdDate' => String.valueOf(h.CreatedDate),
-            'status' => (h.Status__c == null ? '' : h.Status__c)
+            'historyId' => history.Id,
+            'rawResponse' => (history.Claude_Response__c == null ? '' : history.Claude_Response__c),
+            'optimizationSuggestions' => (history.Optimization_Suggestions__c == null ? '' : history.Optimization_Suggestions__c),
+            'explanation' => (history.Explanation__c == null ? '' : history.Explanation__c),
+            'inputCode' => (history.Input_Code__c == null ? '' : history.Input_Code__c),
+            //'createdDate' => String.valueOf(h.CreatedDate),
+            'status' => (history.Status__c == null ? '' : history.Status__c)
         };
         return JSON.serialize(out);
 
+    }
+
+    @AuraEnabled
+    public static String getHistoryStatus(Id historyId) {
+       
+        Code_Analysis_History__c hist = [
+            SELECT Id, Status__c, Processed__c
+            FROM Code_Analysis_History__c
+            WHERE Id = :historyId
+            LIMIT 1
+        ];
+
+        Map<String, Object> result = new Map<String, Object>();
+        result.put('status', hist.Status__c);
+        result.put('processed' , (hist.Processed__c == null ? false : hist.Processed__c));
+        //result.put('explanation', hist.Explanation__c);
+        //result.put('optimizations', hist.Optimizations__c);
+
+        return JSON.serialize(result);
     }
 
 }
