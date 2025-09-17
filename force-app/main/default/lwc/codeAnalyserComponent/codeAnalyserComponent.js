@@ -164,7 +164,7 @@ export default class CodeAnalyserComponent extends LightningElement {
                     // log but keep polling (transient errors)
                     console.error('Polling error', err);
                 });
-        }, this.pollingIntervalMs);
+        }, this.pollingIntervals);
     }
 
     fetchResults(historyId) {
