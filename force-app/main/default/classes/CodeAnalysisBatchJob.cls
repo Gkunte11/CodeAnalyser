@@ -17,7 +17,7 @@ public with sharing class CodeAnalysisBatchJob implements Database.Batchable, Da
         return Database.getQueryLocator([SELECT Id FROM User WHERE Id = :UserInfo.getUserId()]);
     }
 
-    public void execute(Database.BatchableContext context, List<SObject> scope){
+    public void executeBatch(Database.BatchableContext context, List<SObject> scope){
 
         ContentVersion cv = [
             SELECT VersionData 
