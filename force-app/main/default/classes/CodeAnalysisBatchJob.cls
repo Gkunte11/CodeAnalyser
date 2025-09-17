@@ -1,4 +1,4 @@
-public with sharing class CodeAnalysisBatchJob implements Database.Batchable, Database.Stateful{
+public with sharing class CodeAnalysisBatchJob implements Database.Batchable<SObject>, Database.Stateful{
 
     private String contentDocumentId;
     private Id historyId;
@@ -17,7 +17,7 @@ public with sharing class CodeAnalysisBatchJob implements Database.Batchable, Da
         return Database.getQueryLocator([SELECT Id FROM User WHERE Id = :UserInfo.getUserId()]);
     }
 
-    public void executeBatch(Database.BatchableContext context, List<SObject> scope){
+    public void execute(Database.BatchableContext context, List<SObject> scope){
 
         ContentVersion cv = [
             SELECT VersionData 
@@ -48,5 +48,9 @@ public with sharing class CodeAnalysisBatchJob implements Database.Batchable, Da
         history.Status__c = 'Completed';
 
         update history;
+    }
+
+    public void finish(Database.BatchableContext bc) {
+        
     }
 }
