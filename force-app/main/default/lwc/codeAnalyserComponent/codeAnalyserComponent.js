@@ -1,7 +1,7 @@
 import { LightningElement } from 'lwc';
-import startFileAnalysis from '@salesforce/apex/ClaudeServiceCall.explainCode';
-import startPasteAnalysis from '@salesforce/apex/ClaudeServiceCall.explainCode';
-import getHistoryResults from '@salesforce/apex/ClaudeServiceCall.explainCode';
+import startFileAnalysis from '@salesforce/apex/ClaudeServiceCall.startFileAnalysis';
+import startPasteAnalysis from '@salesforce/apex/ClaudeServiceCall.startPasteAnalysis';
+import getHistoryResults from '@salesforce/apex/ClaudeServiceCall.getHistoryResults';
 //import fileBatch from '@salesforce/apex/ClaudeFileHandler.fileBatch';
 
 export default class CodeAnalyserComponent extends LightningElement {
@@ -82,6 +82,7 @@ export default class CodeAnalyserComponent extends LightningElement {
             return;
         }
 
+        console.log('File upload started');
         this.processingMessage = 'Analyzing the file contents...';
         this.isProcessing = true;
 

@@ -149,6 +149,7 @@ public with sharing class ClaudeServiceCall {
         
     }
 
+    @AuraEnabled
     public static String startPasteAnalysis(String codeSnippet, Boolean lineByLine, Boolean optimizationRequested){
 
         try{
@@ -273,6 +274,7 @@ public with sharing class ClaudeServiceCall {
         return 'No optimizations were suggested by Claude';
     }
 
+    @AuraEnabled
     public static String getHistoryResults(String historyId){
 
         if (historyId == null){

@@ -1,4 +1,4 @@
-public with sharing class CodeAnalysisBatchJob implements Database.Batchable<SObject>, Database.Stateful{
+public with sharing class CodeAnalysisBatchJob implements Database.Batchable<SObject>, Database.Stateful, Database.AllowsCallouts{
 
     private String contentDocumentId;
     private Id historyId;
