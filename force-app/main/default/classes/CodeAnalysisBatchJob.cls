@@ -1,4 +1,4 @@
-public with sharing class CodeAnalysisBatchJob implements Queueable, Database.AllowsCallouts{
+public with sharing class CodeAnalysisBatchJob implements Database.Batchable, Database.Stateful{
 
     private String contentDocumentId;
     private Id historyId;
@@ -13,7 +13,11 @@ public with sharing class CodeAnalysisBatchJob implements Queueable, Database.Al
 
     }
 
-    public void execute(QueueableContext context){
+    public Database.QueryLocator start(Database.BatchableContext context){
+        return Database.getQueryLocator([SELECT Id FROM User WHERE Id = :UserInfo.getUserId()]);
+    }
+
+    public void execute(Database.BatchableContext context, List<SObject> scope){
 
         ContentVersion cv = [
             SELECT VersionData 
@@ -32,7 +36,7 @@ public with sharing class CodeAnalysisBatchJob implements Queueable, Database.Al
 
         for(String chunk: chunks){
 
-            String response = ClaudeServiceCall.explainCode(chunk, lineByLine, optimizationRequested);
+            String response = ClaudeServiceCall.explainFileCode(chunk, lineByLine, optimizationRequested);
 
             finalExplanation += response + '\n\n';
         }

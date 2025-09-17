@@ -1,6 +1,8 @@
 import { LightningElement } from 'lwc';
-import explainCode from '@salesforce/apex/ClaudeServiceCall.explainCode';
-import fileBatch from '@salesforce/apex/ClaudeFileHandler.fileBatch';
+import startFileAnalysis from '@salesforce/apex/ClaudeServiceCall.explainCode';
+import startPasteAnalysis from '@salesforce/apex/ClaudeServiceCall.explainCode';
+import getHistoryResults from '@salesforce/apex/ClaudeServiceCall.explainCode';
+//import fileBatch from '@salesforce/apex/ClaudeFileHandler.fileBatch';
 
 export default class CodeAnalyserComponent extends LightningElement {
 
@@ -137,9 +139,81 @@ export default class CodeAnalyserComponent extends LightningElement {
 
     
     startPolling(){
-
-        
+        // clear prior handle
+        if (this.pollHandle) {
+            clearInterval(this.pollHandle);
+            this.pollHandle = null;
+        }
+        this.pollHandle = setInterval(() => {
+            if (!this.currentHistoryId) return;
+            getHistoryStatus({ historyId: this.currentHistoryId })
+                .then(jsonStr => {
+                    const st = JSON.parse(jsonStr);
+                    this.processingMessage = 'Status: ' + st.status;
+                    if (st.processed === true) {
+                        // done - stop polling and fetch results
+                        clearInterval(this.pollHandle);
+                        this.pollHandle = null;
+                        this.isProcessing = false;
+                        this.fetchResults(this.currentHistoryId);
+                       
+                    }
+                })
+                .catch(err => {
+                    // log but keep polling (transient errors)
+                    console.error('Polling error', err);
+                });
+        }, this.pollingIntervalMs);
     }
 
+    fetchResults(historyId) {
+        if (!historyId) {
+            return;
+        }
+        
+        getHistoryResults({ historyId: historyId })
+            .then(jsonStr => {
+                const out = JSON.parse(jsonStr);
+                this.results = {
+                    historyId: out.historyId,
+                    rawResponse: out.rawResponse || '',
+                    optimizationSuggestions: out.optimizationSuggestions || '',
+                    inputCode: out.inputCode || '',
+                    createdDate: out.createdDate || '',
+                    status: out.status || ''
+                };
+                this.resultsAvailable = true;
+                // attempt to parse line-by-line from rawResponse if model produced a JSON candidate
+                this._tryParseLineByLine(out.rawResponse);
+            })
+            .catch(error => {
+                this.resultsAvailable = false;
+                console.error('Error while fetching results', error);
+            });
+    }
+
+    _tryParseLineByLine(raw) {
+        // If the model purposely returned a JSON block with "line_by_line" or "line_by_line" array,
+        // attempt to extract it. This is heuristic — if model output isn't JSON this will fail silently.
+        this.lineByLineItems = [];
+        this.hasLineByLine = false;
+        if (!raw) return;
+
+        // Try parse as JSON (models sometimes return wrapped text; use a try/catch)
+        try {
+            const parsed = JSON.parse(raw);
+            // Common schema: parsed.line_by_line = [ { line: n, explanation: '...' }, ... ]
+            const candidates = parsed.line_by_line || parsed.lineByLine || parsed.line_by_line || parsed.line_by_line_items;
+            if (Array.isArray(candidates)) {
+                this.lineByLineItems = candidates.map(c => {
+                    return { line: c.line, explanation: c.explanation || c.text || c.comment || '' };
+                });
+                this.hasLineByLine = this.lineByLineItems.length > 0;
+            }
+        } catch (e) {
+            // Not JSON — ignore
+            this.hasLineByLine = false;
+        }
+    }
 
 }

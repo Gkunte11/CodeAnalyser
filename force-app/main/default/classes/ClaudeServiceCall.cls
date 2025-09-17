@@ -31,95 +31,209 @@ public with sharing class ClaudeServiceCall {
 
     private static final String namedCred = 'callout:ClaudeAI';
 
-    @AuraEnabled(cacheable=false)
-    public static string explainCode(String codeSnippet, Boolean lineByLine, Boolean optimizationRequested){
-        
-        Anthropic_Credential__mdt cred = [
-            SELECT Api_Key__c FROM Anthropic_Credential__mdt LIMIT 1
-            ];
+    @AuraEnabled
     
-        String apiKey = cred.Api_Key__c;
+    public static Id startFileAnalysis(String contentDocumentId, Boolean lineByLine, Boolean optimizationRequested){
 
 
-        if(codeSnippet == null || codeSnippet == ''){
-            throw new CalloutException('Code snippet cannot be empty');
-        }
-
-        String prompt = 'You are an expert Software Engineer. Analyse the code and provide  an explanation of the code.';
-        if(lineByLine){
-            prompt += ' Provide a line-by-line explanation of the code in JSON format. The JSON format should return with fields: explanation, line_by_line. ';
-        }
-        if(optimizationRequested){
-            prompt += ' Provide suggestions on how to make the code optimized, if there are any performance improvement steps to carry and if there are any best practices that need to be followed';
-        }
+        Code_Analysis_History__c historyRecord = new Code_Analysis_History__c(
             
-        prompt += '\n\nHere is the code: \n' + codeSnippet;
+            Input_code__c = null,
+            Line_by_Line__c = lineByLine,
+            Optimization_Requested__c = optimizationRequested,
+            Status__c = 'Queued',
+            Processed__c = false
+        );
 
-        /*
+        insert historyRecord;
+
+        Database.executeBatch(new CodeAnalysisBatchJob(contentDocumentId, historyRecord.Id, lineByLine, optimizationRequested), 1);
+
+        return historyRecord.Id;
+    }
+
+
+
+    @AuraEnabled
+    public static string explainFileCode(String codeSnippet, Boolean lineByLine, Boolean optimizationRequested){
         
-        Apex doesn’t have a direct JSON object literal like JavaScript. 
-        The easiest way to construct JSON is to build an Apex Map<String, Object> for key-value pairs, and List<Object> for arrays. 
-        Then we call JSON.serialize() to convert them into a valid JSON string.
+        try{
 
-        */
 
-        Map<String,Object> payload = new Map<String,Object>{
+                Anthropic_Credential__mdt cred = [
+                    SELECT Api_Key__c FROM Anthropic_Credential__mdt LIMIT 1
+                ];
+    
+                String apiKey = cred.Api_Key__c;
 
-            'model' => 'claude-sonnet-4-20250514',
-            'max_tokens' => 2000,
-            'messages' => new List<Object>{
-                new Map<String,Object>{
-                    'role' => 'user',
-                    'content' => prompt
+
+                if(codeSnippet == null || codeSnippet == ''){
+                    throw new CalloutException('Code snippet cannot be empty');
                 }
-            }
-        };
+
+                String prompt = 'You are an expert Software Engineer. Analyse the code and provide  an explanation of the code.';
+            
+                if(lineByLine){
+                    prompt += ' Provide a line-by-line explanation of the code in JSON format. The JSON format should return with fields: explanation, line_by_line. ';
+                }
+        
+                if(optimizationRequested){
+                    prompt += ' Provide suggestions on how to make the code optimized, if there are any performance improvement steps to carry and if there are any best practices that need to be followed';
+                }
+            
+                prompt += '\n\nHere is the code: \n' + codeSnippet;
+
+                /*
+        
+                    Apex doesn’t have a direct JSON object literal like JavaScript. 
+                    The easiest way to construct JSON is to build an Apex Map<String, Object> for key-value pairs, and List<Object> for arrays. 
+                    Then we call JSON.serialize() to convert them into a valid JSON string.
+
+                */
+
+                Map<String,Object> payload = new Map<String,Object>{
+
+                    'model' => 'claude-sonnet-4-20250514',
+                    'max_tokens' => 2000,
+                    'messages' => new List<Object>{
+                        new Map<String,Object>{
+                            'role' => 'user',
+                            'content' => prompt
+                        }
+                    }
+                };
 
         
-        Http http = new Http();
-        HttpRequest req = new HttpRequest();
-        req.setEndPoint(namedCred + '/v1/messages');
-        req.setMethod('POST');
-        req.setHeader('Accept', 'application/json');
-        req.setHeader('Content-Type', 'application/json');
-        req.setHeader('anthropic-version', '2023-06-01');
-        req.setHeader('x-api-key', apiKey);
+                Http http = new Http();
+                HttpRequest req = new HttpRequest();
+                req.setEndPoint(namedCred + '/v1/messages');
+                req.setMethod('POST');
+                req.setHeader('Accept', 'application/json');
+                req.setHeader('Content-Type', 'application/json');
+                req.setHeader('anthropic-version', '2023-06-01');
+                req.setHeader('x-api-key', apiKey);
 
-        req.setTimeout(120000);
+                req.setTimeout(120000);
 
-        req.setBody(JSON.serialize(payload));
-        HttpResponse resp = http.send(req);
+                req.setBody(JSON.serialize(payload));
+                HttpResponse resp = http.send(req);
 
-        String claudeResponse = resp.getBody();
+                String claudeResponse = resp.getBody();
         
 
-        if(resp.getStatusCode() >= 200 && resp.getStatusCode() < 300){
+                if(resp.getStatusCode() >= 200 && resp.getStatusCode() < 300){
 
-            String optimizations;
+                    String optimizations;
 
-            if(optimizationRequested){
+                    if(optimizationRequested){
 
-                optimizations = getOptimizationSuggestions(claudeResponse);
-            }
-            Code_Analysis_History__c history = new 	Code_Analysis_History__c(
+                        optimizations = getOptimizationSuggestions(claudeResponse);
+                    }
+                    
+                    return claudeResponse;
+                }
 
-                Input_code__c = codeSnippet,
-                Line_by_Line__c = lineByLine,
-                Claude_Response__c = claudeResponse,
-                Optimization_Suggestions__c = optimizations,
-                Optimization_Requested__c = optimizationRequested
-            );
+                else{
+                    throw new CalloutException('Callout failed with the following message' + resp.getStatusCode() + ' ' + resp.getBody());
+                }
 
-            insert history;
-            return claudeResponse;
+
         }
+        
+        catch(Exception e){
 
-        else{
-            throw new CalloutException('Callout failed with the following message' + resp.getStatusCode() + ' ' + resp.getBody());
+            throw new CalloutException('Callout failed with the following message' + e.getMessage());
         }
+ 
 
         
     }
+
+    public static String startPasteAnalysis(String codeSnippet, Boolean lineByLine, Boolean optimizationRequested){
+
+        try{
+
+
+            Anthropic_Credential__mdt cred = [
+                SELECT Api_Key__c FROM Anthropic_Credential__mdt LIMIT 1
+            ];
+
+            String apiKey = cred.Api_Key__c;
+
+
+            if(codeSnippet == null || codeSnippet == ''){
+                throw new CalloutException('Code snippet cannot be empty');
+            }
+
+            String prompt = 'You are an expert Software Engineer. Analyse the code and provide  an explanation of the code.';
+        
+            if(lineByLine){
+                prompt += ' Provide a line-by-line explanation of the code in JSON format. The JSON format should return with fields: explanation, line_by_line. ';
+            }
+    
+            if(optimizationRequested){
+                prompt += ' Provide suggestions on how to make the code optimized, if there are any performance improvement steps to carry and if there are any best practices that need to be followed';
+            }
+        
+            prompt += '\n\nHere is the code: \n' + codeSnippet;
+
+
+            Map<String,Object> payload = new Map<String,Object>{
+
+                'model' => 'claude-sonnet-4-20250514',
+                'max_tokens' => 2000,
+                'messages' => new List<Object>{
+                    new Map<String,Object>{
+                        'role' => 'user',
+                        'content' => prompt
+                    }
+                }
+            };
+
+    
+            Http http = new Http();
+            HttpRequest req = new HttpRequest();
+            req.setEndPoint(namedCred + '/v1/messages');
+            req.setMethod('POST');
+            req.setHeader('Accept', 'application/json');
+            req.setHeader('Content-Type', 'application/json');
+            req.setHeader('anthropic-version', '2023-06-01');
+            req.setHeader('x-api-key', apiKey);
+
+            req.setTimeout(120000);
+
+            req.setBody(JSON.serialize(payload));
+            HttpResponse resp = http.send(req);
+
+            String claudeResponse = resp.getBody();
+    
+
+            if(resp.getStatusCode() >= 200 && resp.getStatusCode() < 300){
+
+                String optimizations;
+
+                if(optimizationRequested){
+
+                    optimizations = getOptimizationSuggestions(claudeResponse);
+                }
+                
+                return claudeResponse;
+            }
+
+            else{
+                throw new CalloutException('Callout failed with the following message' + resp.getStatusCode() + ' ' + resp.getBody());
+            }
+
+
+        }
+    
+        catch(Exception e){
+
+            throw new CalloutException('Callout failed with the following message' + e.getMessage());
+        }
+
+    }
+
 
     //deserializing the JSON response and extracting the "text" key to check if the keywords exist based on performance improvement or optimization suggestions and returning the text
     public static String getOptimizationSuggestions(String claudeResponse){
@@ -158,4 +272,32 @@ public with sharing class ClaudeServiceCall {
 
         return 'No optimizations were suggested by Claude';
     }
+
+    public static String getHistoryResults(String historyId){
+
+        if (historyId == null){
+
+            throw new AuraHandledException('Missing historyId');
+        }
+        
+        
+
+        Code_Analysis_History__c h = [
+            SELECT Id, Claude_Response__c, Optimization_Suggestions__c, Input_Code__c, CreatedDate, Status__c
+            FROM Code_Analysis_History__c
+            WHERE Id = :historyId LIMIT 1
+        ];
+
+        Map<String,Object> out = new Map<String,Object>{
+            'historyId' => h.Id,
+            'rawResponse' => (h.Claude_Response__c == null ? '' : h.Claude_Response__c),
+            'optimizationSuggestions' => (h.Optimization_Suggestions__c == null ? '' : h.Optimization_Suggestions__c),
+            'inputCode' => (h.Input_Code__c == null ? '' : h.Input_Code__c),
+            'createdDate' => String.valueOf(h.CreatedDate),
+            'status' => (h.Status__c == null ? '' : h.Status__c)
+        };
+        return JSON.serialize(out);
+
+    }
+
 }
