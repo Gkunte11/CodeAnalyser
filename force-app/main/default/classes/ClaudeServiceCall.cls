@@ -6,6 +6,7 @@ public with sharing class ClaudeServiceCall {
     // This function is to start async processing of files with bigger codes
     @AuraEnabled  
     public static Id startFileAnalysis(String contentDocumentId, Boolean lineByLine, Boolean optimizationRequested){
+    
 
 
         Code_Analysis_History__c historyRecord = new Code_Analysis_History__c(
