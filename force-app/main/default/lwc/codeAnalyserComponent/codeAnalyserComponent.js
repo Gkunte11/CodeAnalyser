@@ -29,11 +29,6 @@ export default class CodeAnalyserComponent extends LightningElement {
         this.code = event.target.value;
     }
 
-    handleLineByLineChange(event){
-
-        this.lineByLine = event.target.checked;
-    }
-
     handleOptimizations(event){
         this.optimizationRequested = event.detail.checked;
     }

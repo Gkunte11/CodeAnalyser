@@ -49,7 +49,6 @@ public with sharing class ClaudeServiceCall {
                 'Return a JSON object with two fields: ' +
                 '"explanation" (a clear explanation of what the code does) and ' +
                 '"optimizations" (suggested improvements or performance/best-practice changes). ' +
-                'If a line-by-line explanation is requested, include that inside "explanation".' +
                 '\n\nCode:\n' + codeSnippet;
 
         Map<String,Object> payload = new Map<String,Object>{
