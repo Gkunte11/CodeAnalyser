@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <lightning-card title="Code Analyzer">
 
         <div class="slds-m-top_medium">
@@ -118,5 +118,57 @@
 
         </div>
         
+    </lightning-card>
+</template> -->
+
+
+<template>
+    <lightning-card title="Code Analyzer">
+        <div class="slds-m-around_medium">
+
+            <!-- Quick Test -->
+            <lightning-textarea
+                label="Quick Test (paste your code)"
+                onchange={handleInputChange}
+                placeholder="Paste a small snippet of the code here for quick analysis">
+            </lightning-textarea>
+
+            <!-- File Upload -->
+            <lightning-file-upload
+                label="Upload File"
+                accept=".java,.py,.js,.html,.cls,.cpp"
+                onuploadfinished={handleUploadFinished}
+                record-id={recordId}
+                multiple=false>
+            </lightning-file-upload>
+
+            <!-- Checkboxes -->
+            <lightning-input type="checkbox" label="Explain line by line" onchange={handleLineByLineChange}></lightning-input>
+            <lightning-input type="checkbox" label="Suggest Optimizations" onchange={handleOptimizations}></lightning-input>
+
+            <!-- Analyze -->
+            <lightning-button label="Analyze" onclick={explainCodeSnippet}></lightning-button>
+
+            <!-- Progress Indicator -->
+            <template if:true={isProcessing}>
+                <div class="slds-m-top_medium">
+                    <lightning-spinner alternative-text="Processing..." size="small"></lightning-spinner>
+                    <p>{processingMessage}</p>
+                </div>
+            </template>
+
+            <!-- Results Tabs -->
+            <template if:true={resultsAvailable}>
+                <lightning-tabset>
+                    <lightning-tab label="Explanation">
+                        <pre>{explanation}</pre>
+                    </lightning-tab>
+                    <lightning-tab label="Optimizations">
+                        <pre>{optimizationSuggestions}</pre>
+                    </lightning-tab>
+                </lightning-tabset>
+            </template>
+
+        </div>
     </lightning-card>
 </template>
