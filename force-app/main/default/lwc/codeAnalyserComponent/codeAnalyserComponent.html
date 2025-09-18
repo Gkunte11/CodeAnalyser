@@ -149,11 +149,9 @@
                 </ul>
             </template>
 
-            <!-- Checkbox -->
-            <lightning-input type="checkbox" label="Suggest Optimizations" onchange={handleOptimizations}></lightning-input>
 
             <!-- Analyze -->
-            <lightning-button label="Analyze" onclick={explainCodeSnippet}></lightning-button>
+            <lightning-button label="Analyze and suggest Optimizations" onclick={explainCodeSnippet}></lightning-button>
 
             <!-- Progress Indicator -->
             <template if:true={isProcessing}>
@@ -166,12 +164,12 @@
             <!-- Results Tabs -->
             <template if:true={resultsAvailable}>
                 <lightning-tabset>
-                    <lightning-tab label="Explanation">
+                    <lightning-tab label="Explanation and Optimizations">
                         <pre>{explanation}</pre>
                     </lightning-tab>
-                    <lightning-tab label="Optimizations">
+                    <!-- <lightning-tab label="Optimizations">
                         <pre>{optimizationSuggestions}</pre>
-                    </lightning-tab>
+                    </lightning-tab> -->
                 </lightning-tabset>
             </template>
 
