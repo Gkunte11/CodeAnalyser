@@ -24,9 +24,6 @@ public with sharing class ClaudeServiceCall {
         return historyRecord.Id;
     }
 
-
-
-    // This function is called via the batch class to process each chunk
     @AuraEnabled
     public static string explainFileCode(String codeSnippet, Boolean lineByLine, Boolean optimizationRequested){
         
@@ -105,20 +102,31 @@ public with sharing class ClaudeServiceCall {
             throw new CalloutException('Code snippet cannot be empty');
         }
 
-        Code_Analysis_History__c historyRecord = new Code_Analysis_History__c(
+        // Code_Analysis_History__c historyRecord = new Code_Analysis_History__c(
 
-            Input_code__c = codeSnippet,
-            Line_by_Line__c = lineByLine,
-            Optimization_Requested__c = optimizationRequested,
-            Status__c = 'Processing',
-            Processed__c = false
-        );
+        //     Input_code__c = codeSnippet,
+        //     Line_by_Line__c = lineByLine,
+        //     Optimization_Requested__c = optimizationRequested,
+        //     Status__c = 'Processing',
+        //     Processed__c = false
+        // );
 
-        insert historyRecord;
+        // insert historyRecord;
 
         try{
 
             String rawResponse = explainFileCode(codeSnippet, lineByLine, optimizationRequested);
+
+            Code_Analysis_History__c historyRecord = new Code_Analysis_History__c(
+
+                Input_code__c = codeSnippet,
+                Line_by_Line__c = lineByLine,
+                Optimization_Requested__c = optimizationRequested,
+                Status__c = 'Processing',
+                Processed__c = false
+            );
+
+            insert historyRecord;
 
             Map<String, String> parsedResponse = parseContent(rawResponse);
 
@@ -139,10 +147,10 @@ public with sharing class ClaudeServiceCall {
 
         catch(Exception ex){
 
-            historyRecord.Status__c = 'Failed';
-            historyRecord.Processed__c = true;
-            historyRecord.Claude_Response__c = ex.getMessage();
-            update historyRecord;
+            // historyRecord.Status__c = 'Failed';
+            // historyRecord.Processed__c = true;
+            // historyRecord.Claude_Response__c = ex.getMessage();
+            // update historyRecord;
 
             throw new CalloutException('Callout failed with the following message' + ex.getMessage());
         }
