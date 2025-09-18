@@ -22,8 +22,17 @@ export default class CodeAnalyserComponent extends LightningElement {
     pollingIntervals = 3000;
     processingMessage;
 
+    showQuickTest = true;
     
     resultsAvailable = false;
+
+    get buttonLabel(){
+        return this.showQuickTest ? 'Use File Upload' : 'Use Quick Test';
+    }
+
+    toggleQuickTest() {
+        this.showQuickTest = !this.showQuickTest;
+    }
 
     handleInputChange(event){
         this.code = event.target.value;

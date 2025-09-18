@@ -2,21 +2,46 @@
     <lightning-card title="Code Analyzer">
         <div class="slds-m-around_medium">
 
+            <lightning-button
+                variant="neutral"
+                label={buttonLabel}
+                onclick={toggleQuickTest}>
+            </lightning-button>
+
             <!-- Quick Test -->
-            <lightning-textarea
-                label="Quick Test (paste your code)"
-                onchange={handleInputChange}
-                placeholder="Paste a small snippet of the code here for quick analysis">
-            </lightning-textarea>
+
+            <template if:true={showQuickTest}>
+
+                <div class="slds-m-top_medium">
+
+                    <lightning-textarea
+                        label="Quick Test (paste your code)"
+                        onchange={handleInputChange}
+                        placeholder="Paste a small snippet of the code here for quick analysis">
+                    </lightning-textarea>
+
+                </div>
+            </template>
+            
 
             <!-- File Upload -->
-            <lightning-file-upload
-                label="Upload File"
-                accept=".java,.py,.js,.html,.cls,.cpp"
-                onuploadfinished={handleUploadFinished}
-                record-id={recordId}
-                multiple=false>
-            </lightning-file-upload>
+
+            <template if:false={showQuickTest}>
+
+                <div class="slds-m-top_medium">
+
+                    <lightning-file-upload
+                        label="Upload File"
+                        accept=".java,.py,.js,.html,.cls,.cpp"
+                        onuploadfinished={handleUploadFinished}
+                        record-id={recordId}
+                        multiple=false>
+                    </lightning-file-upload>
+
+                </div>
+            </template>
+
+            
 
             <template if:true={uploadedFileName}>
                 <p class="slds-m-top_small">Uploaded File:</p>
