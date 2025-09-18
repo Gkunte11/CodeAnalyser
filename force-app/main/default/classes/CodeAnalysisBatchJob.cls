@@ -39,34 +39,32 @@ public with sharing class CodeAnalysisBatchJob implements Database.Batchable<SOb
 
         for(String chunk: chunks){
 
-            String response = ClaudeServiceCall.explainFileCode(chunk, lineByLine, optimizationRequested);
+            try{
 
-            Map<String, Object> parsedString = (Map<String,Object>) JSON.deserializeUntyped(response);
-            if(parsedString.containsKey('explanation')){
+                String response = ClaudeServiceCall.explainFileCode(chunk, lineByLine, optimizationRequested);
 
-                explanations.append((String) parsed.get('explanation')).append('\n\n');
+                Map<String, String> parsedResponse = ClaudeServiceCall.parseContent(response);
 
-            }
-
-            if(parsedString.containsKey('optimizations')){
-
-                optimizations.append((String) parsed.get('optimizations')).append('\n\n');
+                ClaudeServiceCall.saveAnalysisAsRecord(historyId, parsedResponse.get('explanation'), parsedResponse.get('optimizations'), response);
 
             }
-            finalExplanation += response + '\n\n';
+
+            catch(Exception ex){
+
+                System.debug('Error: ' + ex.getMessage());
+            }
+
         }
         
-        Code_Analysis_History__c history = [Select Id from Code_Analysis_History__c where Id =: historyId limit 1];
-
-        history.Claude_Response__c = response;
-        history.Explanation__c = 
-        history.Processed__c = true;
-        history.Status__c = 'Completed';
-
-        update history;
     }
 
     public void finish(Database.BatchableContext bc) {
         
+        Code_Analysis_History__c history = [Select Id, Status__c, Processed__c from Code_Analysis_History__c where Id =: historyId limit 1];
+
+        history.Processed__c = true;
+        history.Status__c = 'Completed';
+
+        update history;
     }
 }
