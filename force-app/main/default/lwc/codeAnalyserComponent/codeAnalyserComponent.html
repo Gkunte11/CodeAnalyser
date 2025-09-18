@@ -142,6 +142,13 @@
                 multiple=false>
             </lightning-file-upload>
 
+            <template if:true={uploadedFileName}>
+                <p class="slds-m-top_small">Uploaded File:</p>
+                <ul>
+                    <li>{uploadedFileName}</li>
+                </ul>
+            </template>
+
             <!-- Checkboxes -->
             <lightning-input type="checkbox" label="Explain line by line" onchange={handleLineByLineChange}></lightning-input>
             <lightning-input type="checkbox" label="Suggest Optimizations" onchange={handleOptimizations}></lightning-input>
