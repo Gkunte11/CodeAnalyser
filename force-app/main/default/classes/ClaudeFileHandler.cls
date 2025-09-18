@@ -1,4 +1,4 @@
- public with sharing class ClaudeFileHandler {
+public with sharing class ClaudeFileHandler {
 //     @AuraEnabled
 //     public static String fileBatch(Id contentDocumentId, Boolean lineByLine, Boolean optimizationRequested) {
 //         // ContentVersion cv = [
@@ -26,5 +26,4 @@
 //         // System.enqueueJob(new CodeAnalysisBatchJob(contentDocumentId, historyRecord.Id, lineByLine, optimizationRequested));
 
 //         // return historyRecord.Id;
-//     }
- }
+}
