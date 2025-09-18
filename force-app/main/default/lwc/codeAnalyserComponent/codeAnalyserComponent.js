@@ -148,7 +148,7 @@ export default class CodeAnalyserComponent extends LightningElement {
                 const out = JSON.parse(jsonStr);
                 
                 this.explanation = out.explanation || 'No explanation available';
-                this.optimizations = out.optimizations || 'No optimizations available';
+                this.optimizations = out.optimizationSuggestions || 'No optimizations available';
                 this.resultsAvailable = true;
                 console.log('i am inside the get history results call of the js file');
                 // attempt to parse line-by-line from rawResponse if model produced a JSON candidate

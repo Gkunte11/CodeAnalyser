@@ -30,6 +30,8 @@ public with sharing class CodeAnalysisBatchJob implements Database.Batchable<SOb
             LIMIT 1
         ];
         
+        //Code_Analysis_History__c history = [Select Id, Explanation__c, Optimization_Suggestions__c from Code_Analysis_History__c where Id =: historyId limit 1];
+
         String content =  cv.VersionData.toString();
 
         List<String> chunks = ChunkUtils.chunkCode(content, 200);

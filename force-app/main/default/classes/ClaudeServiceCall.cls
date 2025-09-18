@@ -103,17 +103,6 @@ public with sharing class ClaudeServiceCall {
             throw new CalloutException('Code snippet cannot be empty');
         }
 
-        // Code_Analysis_History__c historyRecord = new Code_Analysis_History__c(
-
-        //     Input_code__c = codeSnippet,
-        //     Line_by_Line__c = lineByLine,
-        //     Optimization_Requested__c = optimizationRequested,
-        //     Status__c = 'Processing',
-        //     Processed__c = false
-        // );
-
-        // insert historyRecord;
-
         try{
 
             String rawResponse = explainFileCode(codeSnippet, lineByLine, optimizationRequested);
@@ -147,11 +136,6 @@ public with sharing class ClaudeServiceCall {
         }
 
         catch(Exception ex){
-
-            // historyRecord.Status__c = 'Failed';
-            // historyRecord.Processed__c = true;
-            // historyRecord.Claude_Response__c = ex.getMessage();
-            // update historyRecord;
 
             throw new CalloutException('Callout failed with the following message' + ex.getMessage());
         }
@@ -263,7 +247,7 @@ public with sharing class ClaudeServiceCall {
         // appending the explanation and optimization suggestions as the batch processing will add explanation of small chunks of code
         if(!String.isBlank(explanation)){
 
-            String baseExp = historyRecord.Explanation__c == null ? '' : historyRecord.Explanation__c;
+            String baseExp = historyRecord.Explanation__c == null ? '' : historyRecord.Explanation__c + '\n\n';
             historyRecord.Explanation__c = baseExp + '\n\n' + explanation;
             
         }
