@@ -151,7 +151,12 @@
 
 
             <!-- Analyze -->
-            <lightning-button label="Analyze and suggest Optimizations" onclick={explainCodeSnippet}></lightning-button>
+            <div class="slds-m-top_medium">
+
+                <lightning-button label="Analyze and suggest Optimizations" onclick={explainCodeSnippet}></lightning-button>
+
+            </div>
+            
 
             <!-- Progress Indicator -->
             <template if:true={isProcessing}>
