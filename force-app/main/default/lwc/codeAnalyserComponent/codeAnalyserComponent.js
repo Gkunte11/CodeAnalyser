@@ -35,7 +35,7 @@ export default class CodeAnalyserComponent extends LightningElement {
     }
 
     handleOptimizations(event){
-        this.optimizationRequested = event.detail.activeTabValue;
+        this.optimizationRequested = event.detail.checked;
     }
 
     handleTabChange(event){
