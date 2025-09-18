@@ -251,7 +251,7 @@ public with sharing class ClaudeServiceCall {
     }
 
     @AuraEnabled
-    public static void saveAnalysisAsRecord(String historyId, String optimizationSuggestions, String explanation, String claudeResponse){
+    public static void saveAnalysisAsRecord(String historyId, String explanation, String optimizationSuggestions, String claudeResponse){
 
         if(String.isBlank(historyId)){
             return;
