@@ -199,10 +199,10 @@ public with sharing class ClaudeServiceCall {
                     for (Object value : parsedString.values()) {
                         
                         if (value instanceof String) {
-                            String str = (String) v;
+                            String str = (String) value;
                             
                             if (str.length() > best.length()) {
-                                best = s;
+                                best = str;
                             }
 
                         } 
@@ -240,6 +240,7 @@ public with sharing class ClaudeServiceCall {
 
         }
             
+        return result;
     }
 
     @AuraEnabled

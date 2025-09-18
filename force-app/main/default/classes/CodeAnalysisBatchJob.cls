@@ -5,8 +5,8 @@ public with sharing class CodeAnalysisBatchJob implements Database.Batchable<SOb
     private Boolean lineByLine;
     private Boolean optimizationRequested;
 
-    private StringBuilder explanations = new StringBuilder();
-    private StringBuilder optimizationsResult = new StringBuilder();
+    private String explanations = '';
+    private String optimizationsResult = '';
 
     public CodeAnalysisBatchJob(String contentDocumentId, Id historyId, Boolean lineByLine, Boolean optimizationRequested) {
         this.contentDocumentId = contentDocumentId;
