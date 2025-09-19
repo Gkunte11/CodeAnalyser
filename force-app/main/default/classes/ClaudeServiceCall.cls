@@ -158,6 +158,18 @@ public with sharing class ClaudeServiceCall {
 
         try {
             
+            String cleanResponse = claudeResponse.trim();
+
+            if (cleaned.startsWith('```')) {
+                
+                Integer firstBrace = cleaned.indexOf('{');
+                
+                Integer lastBrace = cleaned.lastIndexOf('}');
+                
+                if (firstBrace != -1 && lastBrace != -1) {
+                cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+                }
+            }
 
             Object parsed = JSON.deserializeUntyped(claudeResponse);
 
@@ -166,7 +178,7 @@ public with sharing class ClaudeServiceCall {
                 Map<String, Object> parsedString = (Map<String, Object>) parsed;
 
                 List<String> explanationKeys = new List<String>{'explanation','explanations','code_explanation','explain','output'};
-                List<String> optimizationKeys = new List<String>{'optimizations','optimization','optimization_suggestions','suggestions'};
+                List<String> optimizationKeys = new List<String>{'optimizations','optimization','category','suggestions'};
 
                 // find the explanation key and append the string to the main result
                 for (String str : explanationKeys) {
@@ -245,6 +257,9 @@ public with sharing class ClaudeServiceCall {
         Code_Analysis_History__c historyRecord = [SELECT Id, Explanation__c, Optimization_Suggestions__c, Claude_Response__c FROM Code_Analysis_History__c WHERE Id = :historyId LIMIT 1];
         
         // appending the explanation and optimization suggestions as the batch processing will add explanation of small chunks of code
+
+        
+
         if(!String.isBlank(explanation)){
 
             String baseExp = historyRecord.Explanation__c == null ? '' : historyRecord.Explanation__c + '\n\n';
