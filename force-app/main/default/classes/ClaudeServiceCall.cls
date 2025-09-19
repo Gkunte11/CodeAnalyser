@@ -160,14 +160,16 @@ public with sharing class ClaudeServiceCall {
             
             String cleanResponse = claudeResponse.trim();
 
-            if (cleaned.startsWith('```')) {
+            if (cleanResponse.startsWith('```')) {
                 
-                Integer firstBrace = cleaned.indexOf('{');
+                Integer firstBrace = cleanResponse.indexOf('{');
                 
-                Integer lastBrace = cleaned.lastIndexOf('}');
+                Integer lastBrace = cleanResponse.lastIndexOf('}');
                 
                 if (firstBrace != -1 && lastBrace != -1) {
-                cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+                    
+                    cleanResponse = cleanResponse.substring(firstBrace, lastBrace + 1);
+                    
                 }
             }
 
