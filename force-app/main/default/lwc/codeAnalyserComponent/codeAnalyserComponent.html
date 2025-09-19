@@ -71,7 +71,15 @@
             <template if:true={resultsAvailable}>
                 <lightning-tabset>
                     <lightning-tab label="Explanation and Optimizations">
-                        <pre>{explanation}</pre>
+                        <template if:true={historyLink}>
+                            <p class="slds-m-bottom_small">
+                                <lightning-formatted-url 
+                                    value={historyLink} 
+                                    label="View Full Analysis Record"
+                                    target="_blank">
+                                </lightning-formatted-url>
+                            </p>
+                        </template>
                     </lightning-tab>
                     
                 </lightning-tabset>

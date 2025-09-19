@@ -144,108 +144,267 @@ public with sharing class ClaudeServiceCall {
 
 
     //deserializing the JSON response and extracting the "text" key to check if the keywords exist based on performance improvement or optimization suggestions and returning the text
-    public static Map<String, String> parseContent(String claudeResponse){
-
+    public static Map<String, String> parseContent(String claudeResponse) {
+        
         Map<String, String> result = new Map<String, String>{
-
             'explanation' => '',
             'optimizations' => ''
         };
-        
-        if (String.isBlank(claudeResponse)) {
-            return result;
+                    
+        if(String.isBlank(claudeResponse)) {          
+            return result;         
         }
-
+        
+        //System.debug('parseContent - RAW RESPONSE: ' + claudeResponse);
+        
+        // Helper: try to extract a likely JSON/text payload from various wrapper formats
+        
+        String candidate = claudeResponse.trim();
+        
+        // 1) If it's valid JSON, attempt to find usable text fields
+        
         try {
             
-            String cleanResponse = claudeResponse.trim();
-
-            if (cleanResponse.startsWith('```')) {
+            Object topObj = JSON.deserializeUntyped(candidate);
+            if (topObj instanceof Map<String, Object>) {
                 
-                Integer firstBrace = cleanResponse.indexOf('{');
+                Map<String, Object> topMap = (Map<String, Object>) topObj;
                 
-                Integer lastBrace = cleanResponse.lastIndexOf('}');
-                
-                if (firstBrace != -1 && lastBrace != -1) {
-                    
-                    cleanResponse = cleanResponse.substring(firstBrace, lastBrace + 1);
-                    
-                }
-            }
-
-            Object parsed = JSON.deserializeUntyped(claudeResponse);
-
-            if(parsed instanceof Map<String, Object>){
-
-                Map<String, Object> parsedString = (Map<String, Object>) parsed;
-
-                List<String> explanationKeys = new List<String>{'explanation','explanations','code_explanation','explain','output'};
-                List<String> optimizationKeys = new List<String>{'optimizations','optimization','category','suggestions'};
-
-                // find the explanation key and append the string to the main result
-                for (String str : explanationKeys) {
-                    if (parsedString.containsKey(str) && parsedString.get(str) != null) {
-                        result.put('explanation', String.valueOf(parsedString.get(str)));
-                        break;
-                    }
-                }
-
-                // find optimizations and append to the result
-                for (String str : optimizationKeys) {
-                    if (parsedString.containsKey(str) && parsedString.get(str) != null) {
-                        result.put('optimizations', String.valueOf(parsedString.get(str)));
-                        break;
-                    }
-                }
-
-                //If Claude didn’t explicitly return an explanation, then take the longest text field (or concatenated list of texts) from the JSON and use that as the explanation
-                if (String.isBlank(result.get('explanation'))) {
-                    // iterate values and pick the longest string value as explanation
-                    String best = '';
-                    for (Object value : parsedString.values()) {
-                        
-                        if (value instanceof String) {
-                            String str = (String) value;
+                // Common wrapper keys that may contain the inner text/json
+                List<String> wrapperKeys = new List<String>{'text','completion','output','response','result','message','choices','body'};
                             
-                            if (str.length() > best.length()) {
-                                best = str;
-                            }
-
-                        } 
-                        //If the field is a list (Claude sometimes returns lists of sentences/steps)
-                        else if (value instanceof List<Object>) {
-                            // join list strings
-                            List<Object> lst = (List<Object>) value;
-                            String joined = '';
+                    // Try to extract a string payload from those keys
+                    for (String k : wrapperKeys) {
+                        if (topMap.containsKey(k) && topMap.get(k) != null) {
+                            Object v = topMap.get(k);
                             
-                            for (Object o : lst) {
-                                joined += (o == null ? '' : String.valueOf(o)) + '\n';
+                            // string -> use it
+                            if (v instanceof String) {
+                                candidate = (String) v;
+                                break;
                             }
                             
-                            if (joined.length() > best.length()) {
-                                best = joined;
+                            // list -> look for first usable element (choices/messages)
+                            if (v instanceof List<Object>) {
+                                List<Object> lst = (List<Object>) v;
+                                if (!lst.isEmpty()) {
+                                    Object first = lst[0];
+                                    if (first instanceof String) {
+                                        candidate = (String) first;
+                                        break;
+                                    } else if (first instanceof Map<String, Object>) {
+                                        Map<String, Object> fm = (Map<String, Object>) first;
+                                        // look for message.content or text inside choice object
+                                        if (fm.containsKey('message')) {
+                                            Object msg = fm.get('message');
+                                            if (msg instanceof Map<String, Object>) {
+                                                Map<String, Object> mm = (Map<String, Object>) msg;
+                                                // content could be string or map
+                                                if (mm.containsKey('content') && mm.get('content') instanceof String) {
+                                                    candidate = (String) mm.get('content');
+                                                    break;
+                                                }
+                                                // some formats: content -> {type: 'text', parts: [...]}
+                                                if (mm.containsKey('content') && mm.get('content') instanceof List<Object>) {
+                                                    List<Object> parts = (List<Object>) mm.get('content');
+                                                    String joined = '';
+                                                    for (Object p : parts) joined += (p == null ? '' : String.valueOf(p));
+                                                    if (!String.isBlank(joined)) {
+                                                        candidate = joined;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (fm.containsKey('text') && fm.get('text') instanceof String) {
+                                            candidate = (String) fm.get('text');
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // map -> maybe content string inside map
+                            if (v instanceof Map<String, Object>) {
+                                Map<String, Object> m = (Map<String, Object>) v;
+                                if (m.containsKey('content') && m.get('content') instanceof String) {
+                                    candidate = (String) m.get('content');
+                                    break;
+                                }
+                                if (m.containsKey('text') && m.get('text') instanceof String) {
+                                    candidate = (String) m.get('text');
+                                    break;
+                                }
                             }
                         }
                     }
-                    if (!String.isBlank(best)) {
-
-                        result.put('explanation', best);
-                    }
-                }
-
-                // final fallback: serialize entire parsed object
-                if (String.isBlank(result.get('explanation'))) {
-                    result.put('explanation', JSON.serialize(parsed));
-                }
-                return result;
-
+                
+                // If none of the wrapper keys yielded a candidate, keep candidate as original JSON (we will attempt inner parsing later).
+            }
+        } catch (Exception ex) {
+            // Not parseable JSON at top-level — we'll try to extract inner JSON/code-fence next.
+        }
+        
+        // 2) Remove Apex map-like wrapper if present: e.g. {text=```json\n{...}\n``` , type=text}
+        //    Look for 'text=' pattern and extract until a likely delimiter (', type=' or end brace).
+        Integer textIdx = candidate.toLowerCase().indexOf('text=');
+        if (textIdx > -1) {
+            Integer start = textIdx + 5;
+            Integer delim = candidate.toLowerCase().indexOf(', type=', start);
+            if (delim == -1) delim = candidate.lastIndexOf('}');
+            if (delim == -1) delim = candidate.length();
+            String extracted = candidate.substring(start, Math.min(delim, candidate.length())).trim();
+            // if extracted starts with backticks, keep it (further cleaning below)
+            if (!String.isBlank(extracted)) candidate = extracted;
+        }
+        
+        candidate = candidate.trim();
+        
+        // 3) Strip triple-backtick fences if present (```json ... ``` or ``` ... ```)
+        Integer fenceStart = candidate.indexOf('```');
+        if (fenceStart != -1) {
+            Integer fenceEnd = candidate.lastIndexOf('```');
+            if (fenceEnd > fenceStart) {
+                candidate = candidate.substring(fenceStart + 3, fenceEnd).trim();
+            } else {
+                // remove remaining fences
+                candidate = candidate.replace('```','').trim();
             }
         }
-
-        catch(Exception ex) {
-
+        
+        // 4) If candidate contains leading language tag like: "json\n{...}", find first '{'
+        Integer firstBrace = candidate.indexOf('{');
+        Integer lastBrace = candidate.lastIndexOf('}');
+        if (firstBrace > -1 && lastBrace > firstBrace) {
+            String innerJson = candidate.substring(firstBrace, lastBrace + 1);
+            // Try to parse this inner JSON
+            try {
+                Object innerObj = JSON.deserializeUntyped(innerJson);
+                if (innerObj instanceof Map<String, Object>) {
+                    Map<String, Object> innerMap = (Map<String, Object>) innerObj;
+                    
+                    // Explanation keys
+                    List<String> explanationKeys = new List<String>{'explanation','explanations','code_explanation','explain','output','analysis','text'};
+                        for (String k : explanationKeys) {
+                            if (innerMap.containsKey(k) && innerMap.get(k) != null) {
+                                Object v = innerMap.get(k);
+                                if (v instanceof String) {
+                                    result.put('explanation', String.valueOf(v));
+                                } else if (v instanceof List<Object>) {
+                                    // join list items
+                                    List<Object> lst = (List<Object>) v;
+                                    String joined = '';
+                                    for (Object it : lst) joined += (it == null ? '' : String.valueOf(it)) + '\n';
+                                    result.put('explanation', joined.trim());
+                                } else {
+                                    result.put('explanation', String.valueOf(v));
+                                }
+                                break;
+                            }
+                        }
+                    
+                    // Optimizations keys
+                    List<String> optimizationKeys = new List<String>{'optimizations','optimization','optimization_suggestions','suggestions','improvements'};
+                        for (String k : optimizationKeys) {
+                            if (innerMap.containsKey(k) && innerMap.get(k) != null) {
+                                Object v = innerMap.get(k);
+                                
+                                // If it's a list of strings
+                                if (v instanceof List<Object>) {
+                                    List<Object> lst = (List<Object>) v;
+                                    List<String> flat = new List<String>();
+                                    for (Object o : lst) {
+                                        if (o instanceof String) {
+                                            flat.add(String.valueOf(o));
+                                        } else if (o instanceof Map<String, Object>) {
+                                            // If item is an object (e.g. {category:..., suggestions:[...]})
+                                            Map<String, Object> itemMap = (Map<String, Object>) o;
+                                            if (itemMap.containsKey('category') && itemMap.containsKey('suggestions')) {
+                                                String cat = String.valueOf(itemMap.get('category'));
+                                                flat.add('Category: ' + cat);
+                                                Object suggs = itemMap.get('suggestions');
+                                                if (suggs instanceof List<Object>) {
+                                                    for (Object s : (List<Object>) suggs) {
+                                                        flat.add('- ' + String.valueOf(s));
+                                                    }
+                                                }
+                                            } else {
+                                                // fallback: stringify the map
+                                                flat.add(String.valueOf(JSON.serialize(itemMap)));
+                                            }
+                                        } else {
+                                            flat.add(String.valueOf(o));
+                                        }
+                                    }
+                                    // join with newlines
+                                    if (!flat.isEmpty()) {
+                                        result.put('optimizations', String.join(flat, '\n'));
+                                    }
+                                } else if (v instanceof String) {
+                                    result.put('optimizations', String.valueOf(v));
+                                } else {
+                                    result.put('optimizations', String.valueOf(v));
+                                }
+                                break;
+                            }
+                        }
+                    
+                    // If explanation still blank, pick the longest string-like value from innerMap
+                    if (String.isBlank(result.get('explanation'))) {
+                        String best = '';
+                        for (Object val : innerMap.values()) {
+                            if (val instanceof String) {
+                                String s = (String) val;
+                                if (s.length() > best.length()) best = s;
+                            } else if (val instanceof List<Object>) {
+                                String joined = '';
+                                for (Object o : (List<Object>) val) joined += (o == null ? '' : String.valueOf(o)) + '\n';
+                                if (joined.length() > best.length()) best = joined;
+                            }
+                        }
+                        if (!String.isBlank(best)) result.put('explanation', best.trim());
+                    }
+                    
+                    return result;
+                }
+            } catch (Exception ex) {
+                // inner not JSON or parse failed — fall back to text heuristics below
+                System.debug('parseContent - innerJson parse failed: ' + ex.getMessage());
+            }
         }
-            
+        
+        // 5) If we couldn't parse inner JSON, treat candidate as plain text and attempt a heuristic split
+        String plain = candidate;
+        String lowerPlain = plain.toLowerCase();
+        Integer idxA = lowerPlain.indexOf('optimizations');
+        Integer idxB = lowerPlain.indexOf('optimization');
+        Integer idxC = lowerPlain.indexOf('suggestion');
+        Integer idxOpt = Math.max(idxA, Math.max(idxB, idxC));
+        
+        if (idxOpt > 0) {
+            result.put('explanation', plain.substring(0, idxOpt).trim());
+            result.put('optimizations', plain.substring(idxOpt).trim());
+            return result;
+        }
+        
+        // 6) Last-resort: if candidate contains JSON-like substring (no outer braces detection), attempt to find first '{' and '}' anyway
+        if (firstBrace > -1 && lastBrace > firstBrace) {
+            String attempted = candidate.substring(firstBrace, lastBrace + 1);
+            try {
+                Object attemptObj = JSON.deserializeUntyped(attempted);
+                if (attemptObj instanceof Map<String, Object>) {
+                    // recursively call parseContent with the cleaned JSON
+                    return parseContent(attempted);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        
+        // 7) Final fallback: put whole cleaned text into explanation
+        result.put('explanation', plain);
+        result.put('optimizations', '');
+        
         return result;
     }
 
@@ -334,6 +493,7 @@ public with sharing class ClaudeServiceCall {
         Map<String, Object> result = new Map<String, Object>();
         result.put('status', hist.Status__c);
         result.put('processed' , (hist.Processed__c == null ? false : hist.Processed__c));
+        
 
         return JSON.serialize(result);
     }

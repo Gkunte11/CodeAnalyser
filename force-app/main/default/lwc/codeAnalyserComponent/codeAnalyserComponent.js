@@ -159,4 +159,8 @@ export default class CodeAnalyserComponent extends LightningElement {
             });
     }
 
+    get historyLink() {
+        return this.currentHistoryId ? `/lightning/r/Code_Analysis_History__c/${this.currentHistoryId}/view` : null;
+    }
+
 }
